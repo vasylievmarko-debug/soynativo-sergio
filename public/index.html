@@ -714,7 +714,6 @@ function openVideo(name) {
 
 function modalChooseTeacher() {
   const name = document.getElementById("modal-choose-btn").dataset.teacher || "";
-  // find teacher language
   const langMap = {
     "Эрик": "Испанский язык",
     "Алехандро": "Испанский язык",
@@ -723,7 +722,7 @@ function modalChooseTeacher() {
     "Татьяна": "Болгарский язык",
   };
   closeVideoModal();
-  setTimeout(() => chooseTeacher(name, langMap[name] || ""), 150);
+  chooseTeacher(name, langMap[name] || "");
 }
 
 function closeVideoModal() {
@@ -752,38 +751,30 @@ function closeContactModal() {
 }
 
 function chooseTeacher(name, lang) {
-  // scroll to contacts section
-  const section = document.getElementById("contacts");
-  if (section) {
-    const headerH = document.querySelector("header")?.offsetHeight || 80;
-    const top = section.getBoundingClientRect().top + window.scrollY - headerH - 16;
-    window.scrollTo({ top, behavior: "smooth" });
-  }
-  // open modal after scroll settles
-  setTimeout(() => {
-    document.getElementById("contact-modal").classList.remove("hidden");
-    document.getElementById("selected-teacher-field").classList.remove("hidden");
-    // Translate teacher name and language based on current UI language
-    const t = translations[currentLang] || translations['ru'];
-    const nameKeyMap = {
-      'Эрик': 'teacher_erik', 'Алехандро': 'teacher_alejandro',
-      'Лара': 'teacher_lara', 'Лидия': 'teacher_lidia', 'Татьяна': 'teacher_tatyana'
-    };
-    const langKeyMap = {
-      'Испанский язык': 'lang_spanish_full', 'Английский язык': 'lang_english_full',
-      'Украинский язык': 'lang_ukrainian_full', 'Болгарский язык': 'lang_bulgarian_full'
-    };
-    const translatedName = t[nameKeyMap[name]] || name;
-    const translatedLang = t[langKeyMap[lang]] || lang || '';
-    document.getElementById("selectedTeacher").value = translatedName;
-    document.getElementById("selectedTeacherLang").value = translatedLang;
-    // hide the language dropdown since it's already known
-    const langField = document.getElementById("form-lang-field");
-    const langSelect = document.getElementById("form-lang-select");
-    langField.classList.add("hidden");
-    langSelect.removeAttribute("required");
-    langSelect.value = "";
-  }, 600);
+  // contact-modal is `fixed inset-0` — opens as an overlay over the
+  // current viewport. No scroll needed, no setTimeout — just show it.
+  document.getElementById("contact-modal").classList.remove("hidden");
+  document.getElementById("selected-teacher-field").classList.remove("hidden");
+  // Translate teacher name and language based on current UI language
+  const t = translations[currentLang] || translations['ru'];
+  const nameKeyMap = {
+    'Эрик': 'teacher_erik', 'Алехандро': 'teacher_alejandro',
+    'Лара': 'teacher_lara', 'Лидия': 'teacher_lidia', 'Татьяна': 'teacher_tatyana'
+  };
+  const langKeyMap = {
+    'Испанский язык': 'lang_spanish_full', 'Английский язык': 'lang_english_full',
+    'Украинский язык': 'lang_ukrainian_full', 'Болгарский язык': 'lang_bulgarian_full'
+  };
+  const translatedName = t[nameKeyMap[name]] || name;
+  const translatedLang = t[langKeyMap[lang]] || lang || '';
+  document.getElementById("selectedTeacher").value = translatedName;
+  document.getElementById("selectedTeacherLang").value = translatedLang;
+  // hide the language dropdown since it's already known
+  const langField = document.getElementById("form-lang-field");
+  const langSelect = document.getElementById("form-lang-select");
+  langField.classList.add("hidden");
+  langSelect.removeAttribute("required");
+  langSelect.value = "";
 }
 
 document.getElementById("contact-form").addEventListener("submit", async (e) => {
