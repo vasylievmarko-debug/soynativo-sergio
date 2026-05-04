@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOY NATIVO — Онлайн-школа языков</title>
+  <script src="https://cdn.tailwindcss.com">
+function toggleLangDropdown() {
+  const menu = document.getElementById('lang-dropdown-menu');
+  const arrow = document.getElementById('lang-dropdown-arrow');
+  const isOpen = !menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', isOpen);
+  arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+function selectLang(lang, label) {
+  document.getElementById('lang-dropdown-label').textContent = label;
+  document.getElementById('lang-dropdown-menu').classList.add('hidden');
+  document.getElementById('lang-dropdown-arrow').style.transform = '';
+  // update checkmarks
+  document.querySelectorAll('.lang-option').forEach(btn => {
+    const check = btn.querySelector('.lang-check');
+    if (btn.getAttribute('data-lang') === lang) {
+      check.classList.remove('hidden');
+      btn.classList.add('font-semibold');
+    } else {
+      check.classList.add('hidden');
+      btn.classList.remove('font-semibold');
+    }
+  });
+  setLang(lang);
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('lang-dropdown-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('lang-dropdown-menu').classList.add('hidden');
+    document.getElementById('lang-dropdown-arrow').style.transform = '';
+  }
+});
+</script>
+  <style>
+    @keyframes fadeInOnScroll {
+      from { opacity: 0; transform: translateY(28px); filter: blur(8px); }
+      to   { opacity: 1; transform: translateY(0);   filter: blur(0);   }
+    }
+    .fade-in-on-scroll {
+      opacity: 0;
+      animation: fadeInOnScroll 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-timeline: view();
+      animation-range: entry 35% cover 55%;
+    }
+
+  
+    .teachers-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .teachers-grid > * {
+      flex: 0 0 calc(33.333% - 14px);
+      min-width: 260px;
+      max-width: 340px;
+    }
+
+    .teacher-card-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .choose-teacher-btn {
+      background: #111;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .choose-teacher-btn:hover {
+      background: #333;
+      transform: scale(1.02);
+    }
+    @media (max-width: 480px) {
+      .teacher-card-actions { flex-direction: column; }
+      .teacher-card-actions button, .teacher-card-actions a { width: 100%; text-align: center; }
+    }
+
+    @keyframes appleSoftGlow {
+      0%   { box-shadow: 0 0 0 rgba(255,255,255,0); }
+      50%  { box-shadow: 0 0 24px rgba(255,255,255,0.45), 0 0 48px rgba(255,255,255,0.18); }
+      100% { box-shadow: 0 0 0 rgba(255,255,255,0); }
+    }
+    .modal-choose-btn {
+      display: block;
+      width: calc(100% - 48px);
+      margin: 20px auto 0;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 16px 32px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      cursor: pointer;
+      animation: appleSoftGlow 2.4s ease-in-out infinite;
+      transition: transform 0.2s ease;
+    }
+    .modal-choose-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 40px rgba(255,255,255,0.28);
+    }
+
+    .feature-card {
+      background: #f5f5f7;
+      border-radius: 2rem;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.06);
+    }
+    .feature-icon svg { width: 26px; height: 26px; }
+    .feature-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #111;
+      margin: 0;
+      line-height: 1.15;
+    }
+    .feature-text {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: #6e6e73;
+      margin: 0;
+    }
+
+    .handwrite-wrapper { margin-top: 4px; }
+    .handwriting-text {
+      font-family: "Brush Script MT", "Brush Script Std", cursive;
+      font-size: clamp(42px, 6vw, 82px);
+      font-weight: 400;
+      line-height: 1.1;
+      color: #ff7a00;
+      white-space: nowrap;
+      display: flex;
+      align-items: baseline;
+    }
+    .handwriting-text span {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(6px) scale(0.96);
+      animation: writeLetter 0.28s ease forwards;
+      animation-delay: calc(var(--i) * 0.18s + 0.2s);
+    }
+    .handwriting-text .hw-space {
+      display: inline-block;
+      width: 0.22em;
+      opacity: 1;
+      animation: none;
+      transform: none;
+    }
+    @keyframes writeLetter {
+      0%   { opacity: 0; transform: translateY(6px) scale(0.96); filter: blur(3px); }
+      60%  { opacity: 1; transform: translateY(0) scale(1.03); filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+</style>
+</head>
+<body class="min-h-screen bg-neutral-100 text-neutral-950">
+
+<!-- HEADER -->
+<header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-black/5">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10 gap-4 flex-wrap">
+    <div class="flex items-center gap-3">
+      <img src="https://i.ibb.co/yBWx6ry0/Logo.png" alt="SOY NATIVO" class="h-10 w-10 object-contain" />
+      <div>
+        <div class="text-sm font-semibold tracking-tight">SOY NATIVO</div>
+        <div class="text-xs text-neutral-500" data-i18n="tagline">Онлайн-школа языков</div>
+      </div>
+    </div>
+    <nav class="hidden items-center gap-8 text-sm font-medium text-neutral-700 md:flex">
+      <a href="#hero"     class="transition hover:text-black" data-i18n="nav_home">Главная</a>
+      <a href="https://school.soynativo.eu/price" target="_blank"  class="transition hover:text-black" data-i18n="nav_pricing">Стоимость услуг</a>
+      <a href="#teachers" class="transition hover:text-black" data-i18n="nav_teachers">Преподаватели</a>
+      <a href="#contacts" class="transition hover:text-black" data-i18n="nav_contacts">Контакты</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <div class="relative" id="lang-dropdown-wrap">
+        <button onclick="toggleLangDropdown()" id="lang-dropdown-btn"
+                class="flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-50 select-none">
+          <span id="lang-dropdown-label">Русский</span>
+          <svg id="lang-dropdown-arrow" class="h-3.5 w-3.5 text-neutral-400 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="lang-dropdown-menu"
+             class="hidden absolute right-0 top-full mt-2 w-44 rounded-2xl border border-black/8 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.1)] overflow-hidden z-50">
+          <button onclick="selectLang('ru','Русский')"    data-lang="ru" class="lang-option w-full text-left px-4 py-3 text-sm font-medium text-neutral-800 transition hover:bg-neutral-50 flex items-center justify-between">Русский<span class="lang-check text-black text-xs">✓</span></button>
+          <button onclick="selectLang('es','Español')"    data-lang="es" class="lang-option w-full text-left px-4 py-3 text-sm font-medium text-neutral-800 transition hover:bg-neutral-50 flex items-center justify-between border-t border-black/5">Español<span class="lang-check hidden text-black text-xs">✓</span></button>
+          <button onclick="selectLang('en','English')"    data-lang="en" class="lang-option w-full text-left px-4 py-3 text-sm font-medium text-neutral-800 transition hover:bg-neutral-50 flex items-center justify-between border-t border-black/5">English<span class="lang-check hidden text-black text-xs">✓</span></button>
+          <button onclick="selectLang('uk','Українська')" data-lang="uk" class="lang-option w-full text-left px-4 py-3 text-sm font-medium text-neutral-800 transition hover:bg-neutral-50 flex items-center justify-between border-t border-black/5">Українська<span class="lang-check hidden text-black text-xs">✓</span></button>
+        </div>
+      </div>
+      <a href="https://school.soynativo.eu/users/login/"
+         class="inline-flex items-center rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition hover:scale-[1.02] hover:bg-neutral-800"
+         data-i18n="nav_cabinet">Кабинет ученика</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section id="hero" class="relative flex min-h-[calc(100vh-73px)] items-center overflow-hidden -mt-10 pt-10 pb-0">
+    <div class="mx-auto grid w-full max-w-7xl items-center gap-10 px-6 py-10 sm:py-14 lg:grid-cols-2 lg:px-10 lg:py-16">
+      <div class="relative z-10 flex flex-col justify-center">
+        <span class="mb-6 inline-flex w-fit rounded-full border border-black/10 bg-white px-5 py-2 text-base font-medium text-neutral-700 shadow-sm" data-i18n="hero_badge">
+          Учите языки с носителями, общаясь на понятном вам языке
+        </span>
+        <h1 class="max-w-3xl text-6xl font-semibold leading-[0.95] tracking-tight sm:text-7xl lg:text-8xl" data-i18n="hero_h1">
+          Говорите уже на первом уроке
+        </h1>
+        <div class="handwrite-wrapper" id="handwrite-wrapper">
+          <div class="handwriting-text" id="handwrite-text" aria-label="вместе с нами">
+            <span style="--i:0">в</span><span style="--i:1">м</span><span style="--i:2">е</span><span style="--i:3">с</span><span style="--i:4">т</span><span style="--i:5">е</span><span class="hw-space">&nbsp;</span><span style="--i:6">с</span><span class="hw-space">&nbsp;</span><span style="--i:7">н</span><span style="--i:8">а</span><span style="--i:9">м</span><span style="--i:10">и</span>
+          </div>
+        </div>
+        <p class="mt-8 max-w-2xl text-xl leading-9 text-neutral-600 sm:text-2xl" data-i18n="hero_p">
+          Без лишней теории. Только практика с носителями и быстрый прогресс. Всё обучение под вашим контролем: гибкое расписание, записи уроков и полный доступ к ним в любой момент.
+        </p>
+      </div>
+      <div class="relative z-10">
+        <div class="rounded-[3rem] border border-black/10 bg-white p-5">
+          <div class="overflow-visible rounded-[2.5rem] bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-700 p-4 text-white sm:p-5 flex flex-col items-center justify-start">
+            <div class="relative flex h-[360px] w-full items-center justify-center overflow-visible">
+              <video src="https://res.cloudinary.com/dafac1mev/video/upload/v1777134199/Timeline_1_ubjyay.webm"
+                     autoplay loop muted playsinline preload="auto"
+                     class="h-[320px] w-[320px] object-contain drop-shadow-[0_0_90px_rgba(255,255,255,0.95)]"
+                     style="transform:scale(2.15)"></video>
+            </div>
+            <div class="mb-3 w-full -mt-10">
+              <div class="text-sm text-white/50 tracking-widest">SOY NATIVO</div>
+              <div class="text-4xl font-semibold tracking-tight mt-3 leading-tight" data-i18n="hero_card_title">Выберите язык. Остальное — за нами.</div>
+            </div>
+            <div class="space-y-3 w-full">
+              <div class="flex flex-wrap gap-3 relative z-10">
+                <button onclick="scrollToLanguage('spanish')"  class="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-base font-medium text-white/90 transition hover:bg-white/10" data-i18n="lang_spanish">Испанский</button>
+                <button onclick="scrollToLanguage('english')"  class="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-base font-medium text-white/90 transition hover:bg-white/10" data-i18n="lang_english">Английский</button>
+                <button onclick="scrollToLanguage('ukrainian')" class="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-base font-medium text-white/90 transition hover:bg-white/10" data-i18n="lang_ukrainian">Украинский</button>
+                <button onclick="scrollToLanguage('bulgarian')" class="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-base font-medium text-white/90 transition hover:bg-white/10" data-i18n="lang_bulgarian">Болгарский</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEO BANNER -->
+  <section class="mx-auto max-w-7xl px-0 py-0 lg:px-0 relative overflow-hidden">
+    <div class="w-full h-[420px] leading-none overflow-hidden bg-neutral-100 relative">
+      <video src="https://res.cloudinary.com/dafac1mev/video/upload/v1777323159/%D1%82%D0%B5%D0%BA%D1%81%D1%82_jcrywx.mov"
+             autoplay loop muted playsinline
+             class="block h-full w-full object-cover"
+             style="filter: brightness(0.98) contrast(0.97);"></video>
+      <!-- top fade -->
+      <div class="pointer-events-none absolute top-0 left-0 w-full z-10"
+           style="height:45%; background: linear-gradient(to bottom, #f5f5f5 0%, rgba(245,245,245,0.7) 40%, transparent 100%);"></div>
+      <!-- bottom fade -->
+      <div class="pointer-events-none absolute bottom-0 left-0 w-full z-10"
+           style="height:55%; background: linear-gradient(to top, #f5f5f5 0%, rgba(245,245,245,0.75) 45%, transparent 100%);"></div>
+      <!-- left fade -->
+      <div class="pointer-events-none absolute top-0 left-0 h-full z-10"
+           style="width:12%; background: linear-gradient(to right, #f5f5f5 0%, transparent 100%);"></div>
+      <!-- right fade -->
+      <div class="pointer-events-none absolute top-0 right-0 h-full z-10"
+           style="width:12%; background: linear-gradient(to left, #f5f5f5 0%, transparent 100%);"></div>
+    </div>
+  </section>
+
+  <!-- PLATFORM -->
+  <section id="platform" class="relative mx-auto max-w-7xl px-6 py-10 lg:px-10">
+    <div class="mx-auto max-w-3xl text-center">
+      <div class="text-sm font-semibold uppercase tracking-[0.22em] text-neutral-500" data-i18n="platform_label">Преимущества платформы</div>
+      <h2 class="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl" data-i18n="platform_h2">Обучение, которое подстраивается под вас</h2>
+      <p class="mt-4 text-lg leading-8 text-neutral-600" data-i18n="platform_p">Ваше расписание, которым вы можете управлять, записи уже проведённых уроков и домашние задания — в одном кабинете.</p>
+    </div>
+    <div class="mt-10 grid gap-8">
+      <div class="fade-in-on-scroll grid items-stretch gap-8 lg:grid-cols-2">
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4f6ef7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+            </svg></div>
+          <h3 class="feature-title" data-i18n="pf1_title">Управление уроками</h3>
+          <p class="feature-text" data-i18n="pf1_text">Добавляйте, переносите или отменяйте занятия самостоятельно, без ожидания ответа преподавателя.</p>
+        </div>
+        <div class="overflow-hidden rounded-[2rem] border border-black/5 bg-neutral-50 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-center">
+          <video src="https://res.cloudinary.com/dafac1mev/video/upload/v1777486518/%D0%A3%D0%BF%D1%80%D0%B0%D0%B2_%D1%83%D1%80%D0%BE%D0%BA%D0%B8_y6f1oi.mov" autoplay loop muted playsinline class="w-full h-auto object-contain"></video>
+        </div>
+      </div>
+      <div class="fade-in-on-scroll grid items-stretch gap-8 lg:grid-cols-2">
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#34c759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
+            </svg></div>
+          <h3 class="feature-title" data-i18n="pf2_title">Записи уроков</h3>
+          <p class="feature-text" data-i18n="pf2_text">Все занятия записываются и доступны только вам в личном кабинете в любое удобное время.</p>
+        </div>
+        <div class="overflow-hidden rounded-[2rem] border border-black/5 bg-neutral-50 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-center">
+          <video src="https://res.cloudinary.com/dafac1mev/video/upload/v1777486927/%D0%97%D0%B0%D0%BF%D0%B8%D1%81%D0%B8%20%D1%83%D1%80%D0%BE%D0%BA%D0%BE%D0%B2.mov" autoplay loop muted playsinline class="w-full h-auto object-contain"></video>
+        </div>
+      </div>
+      <div class="fade-in-on-scroll grid items-stretch gap-8 lg:grid-cols-2">
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
+            </svg></div>
+          <h3 class="feature-title" data-i18n="pf3_title">Домашние задания</h3>
+          <p class="feature-text" data-i18n="pf3_text">Задания, оценки и история каждого урока хранятся на платформе и всегда под рукой.</p>
+        </div>
+        <div class="overflow-hidden rounded-[2rem] border border-black/5 bg-neutral-50 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-center">
+          <video src="https://res.cloudinary.com/dafac1mev/video/upload/v1777493055/%D0%B4%D0%BE%D0%BC%D0%B0%D1%88%D0%BD%D1%8F%D1%8F_%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B0_dtxfzn.mov" autoplay loop muted playsinline class="w-full h-auto object-contain"></video>
+        </div>
+      </div>
+      <div class="fade-in-on-scroll grid items-stretch gap-8 lg:grid-cols-2">
+        <div class="feature-card">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ff3b30" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg></div>
+          <h3 class="feature-title" data-i18n="pf4_title">Поддержка 24/7</h3>
+          <p class="feature-text" data-i18n="pf4_text">Задавайте вопросы преподавателю и службе поддержки через чат на сайте в любое удобное для вас время.</p>
+        </div>
+        <div class="overflow-hidden rounded-[2rem] border border-black/5 bg-neutral-50 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex items-center justify-center">
+          <video src="https://res.cloudinary.com/dafac1mev/video/upload/v1777497208/%D0%BF%D0%BE%D0%B4%D0%B4%D0%B5%D1%80%D0%B6%D0%BA%D0%B0_oukwlz.mov" autoplay loop muted playsinline class="w-full h-auto object-contain"></video>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEACHERS -->
+  <section id="teachers" class="scroll-mt-24 mx-auto max-w-7xl px-6 py-6 lg:px-10 lg:py-10">
+    <div class="mx-auto max-w-3xl text-center">
+      <div class="text-sm font-semibold uppercase tracking-[0.22em] text-neutral-500" data-i18n="teachers_label">Преподаватели</div>
+      <h2 class="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl" data-i18n="teachers_h2">Люди, с которыми хочется заговорить</h2>
+    </div>
+    <div class="mt-12 space-y-12">
+      <div id="teachers-spanish" class="rounded-[2.5rem] bg-neutral-100 p-6 sm:p-8 scroll-mt-24">
+        <div class="mb-6 text-3xl font-semibold tracking-tight" data-i18n="lang_spanish_full">Испанский язык</div>
+        <div class="teachers-grid">
+          <div class="overflow-hidden rounded-[2rem] bg-white text-left shadow-sm ring-1 ring-black/5 transition">
+            <img src="https://res.cloudinary.com/dafac1mev/image/upload/v1777473306/%D0%AD%D1%80%D0%B8%D0%BA_iuedtl.png" alt="Эрик" class="aspect-[4/3] w-full object-cover" />
+            <div class="p-5">
+              <div class="text-2xl font-semibold tracking-tight" data-i18n="teacher_erik">Эрик</div>
+              <div class="mt-1 text-neutral-600" data-i18n="lang_spanish_full">Испанский язык</div>
+              <div class="mt-4 text-sm text-neutral-500" data-i18n="erik_bio">Опыт работы со взрослыми и детьми более 5 лет, подготовка к экзаменам любого уровня (DELE y SIELE до C2), разговорная практика</div>
+              <div class="teacher-card-actions">
+              <button onclick="openVideo('Эрик')" class="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50" data-i18n="watch_video">Смотреть видео</button>
+              <button class="choose-teacher-btn" data-i18n="choose_teacher_btn" onclick="chooseTeacher('Эрик','Испанский язык')">Хочу этого преподавателя!</button>
+            </div>
+            </div>
+          </div>
+          <div class="overflow-hidden rounded-[2rem] bg-white text-left shadow-sm ring-1 ring-black/5 transition">
+            <img src="https://res.cloudinary.com/dafac1mev/image/upload/v1777472093/%D0%90%D0%BB%D0%B5%D1%85%D0%B0%D0%BD%D0%B4%D1%80%D0%BE_ney2eg.png" alt="Алехандро" class="aspect-[4/3] w-full object-cover" />
+            <div class="p-5">
+              <div class="text-2xl font-semibold tracking-tight" data-i18n="teacher_alejandro">Алехандро</div>
+              <div class="mt-1 text-neutral-600" data-i18n="lang_spanish_full">Испанский язык</div>
+              <div class="mt-4 text-sm text-neutral-500" data-i18n="alejandro_bio">Опыт работы со взрослыми и детьми более 10 лет, подготовка к экзаменам любого уровня (DELE y SIELE до C2), разговорная практика</div>
+              <div class="teacher-card-actions">
+              <button onclick="openVideo('Алехандро')" class="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50" data-i18n="watch_video">Смотреть видео</button>
+              <button class="choose-teacher-btn" data-i18n="choose_teacher_btn" onclick="chooseTeacher('Алехандро','Испанский язык')">Хочу этого преподавателя!</button>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid gap-8 lg:grid-cols-3">
+        <div id="teachers-english" class="rounded-[2.5rem] bg-neutral-100 p-6 sm:p-8 scroll-mt-24">
+          <div class="mb-6 text-3xl font-semibold tracking-tight" data-i18n="lang_english_full">Английский язык</div>
+          <div class="overflow-hidden rounded-[2rem] bg-white text-left shadow-sm ring-1 ring-black/5 transition">
+            <img src="https://res.cloudinary.com/dafac1mev/image/upload/v1777468803/ChatGPT_Image_29_%D0%B0%D0%BF%D1%80._2026_%D0%B3._15_19_50_wfgmdo.png" alt="Лара" class="aspect-[4/3] w-full object-cover" />
+            <div class="p-5">
+              <div class="text-2xl font-semibold tracking-tight" data-i18n="teacher_lara">Лара</div>
+              <div class="mt-1 text-neutral-600" data-i18n="lang_english_full">Английский язык</div>
+              <div class="mt-4 text-sm text-neutral-500" data-i18n="lara_bio">Носитель языка (ЮАР), c украинскими и американскими корнями, филолог и психолог. Опыт с детьми и взрослыми, преподавание английского до уровня C2</div>
+              <div class="teacher-card-actions">
+              <button onclick="openVideo('Лара')" class="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50" data-i18n="watch_video">Смотреть видео</button>
+              <button class="choose-teacher-btn" data-i18n="choose_teacher_btn" onclick="chooseTeacher('Лара','Английский язык')">Хочу этого преподавателя!</button>
+            </div>
+            </div>
+          </div>
+        </div>
+        <div id="teachers-ukrainian" class="rounded-[2.5rem] bg-neutral-100 p-6 sm:p-8 scroll-mt-24">
+          <div class="mb-6 text-3xl font-semibold tracking-tight" data-i18n="lang_ukrainian_full">Украинский язык</div>
+          <div class="overflow-hidden rounded-[2rem] bg-white text-left shadow-sm ring-1 ring-black/5 transition">
+            <img src="https://res.cloudinary.com/dafac1mev/image/upload/v1777473310/%D0%9B%D0%B8%D0%B4%D0%B0_jtdbj4.png" alt="Лидия" class="aspect-[4/3] w-full object-cover" />
+            <div class="p-5">
+              <div class="text-2xl font-semibold tracking-tight" data-i18n="teacher_lidia">Лидия</div>
+              <div class="mt-1 text-neutral-600" data-i18n="lang_ukrainian_full">Украинский язык</div>
+              <div class="mt-4 text-sm text-neutral-500" data-i18n="lidia_bio">Профессиональная актриса театра и кино: разговорный украинский, постановка произношения и артикуляции, помощь в избавлении от суржика</div>
+              <div class="teacher-card-actions">
+              <button onclick="openVideo('Лидия')" class="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50" data-i18n="watch_video">Смотреть видео</button>
+              <button class="choose-teacher-btn" data-i18n="choose_teacher_btn" onclick="chooseTeacher('Лидия','Украинский язык')">Хочу этого преподавателя!</button>
+            </div>
+            </div>
+          </div>
+        </div>
+        <div id="teachers-bulgarian" class="rounded-[2.5rem] bg-neutral-100 p-6 sm:p-8 scroll-mt-24">
+          <div class="mb-6 text-3xl font-semibold tracking-tight" data-i18n="lang_bulgarian_full">Болгарский язык</div>
+          <div class="overflow-hidden rounded-[2rem] bg-white text-left shadow-sm ring-1 ring-black/5 transition">
+            <img src="https://res.cloudinary.com/dafac1mev/image/upload/v1777472093/%D0%A2%D0%B0%D1%82%D1%8C%D1%8F%D0%BD%D0%B0_aquuyy.png" alt="Татьяна" class="aspect-[4/3] w-full object-cover" />
+            <div class="p-5">
+              <div class="text-2xl font-semibold tracking-tight" data-i18n="teacher_tatyana">Татьяна</div>
+              <div class="mt-1 text-neutral-600" data-i18n="lang_bulgarian_full">Болгарский язык</div>
+              <div class="mt-4 text-sm text-neutral-500" data-i18n="tatyana_bio">Опыт более 25 лет: преподаватель болгарского и русского языка, экс-завуч (20+ лет), экзаменатор вступительных экзаменов в ВУЗы Болгарии. Подготовка к поступлению и разговорный болгарский язык</div>
+              <div class="teacher-card-actions">
+                <button class="choose-teacher-btn" data-i18n="choose_teacher_btn" onclick="chooseTeacher('Татьяна','Болгарский язык')">Хочу этого преподавателя!</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTS -->
+  <section id="contacts" class="mx-auto max-w-7xl px-6 py-6 lg:px-10 lg:py-10">
+    <div class="rounded-[2.5rem] bg-neutral-100 px-6 py-12 sm:px-10">
+      <div class="mx-auto max-w-3xl text-center">
+        <div class="text-sm font-semibold uppercase tracking-[0.22em] text-neutral-500" data-i18n="contacts_label">Как начать?</div>
+        <h2 class="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl" data-i18n="contacts_h2">Вы уже начали!</h2>
+        <p class="mt-4 text-lg leading-8 text-neutral-600" data-i18n="contacts_p">Если вы здесь — значит, вы уже с нами. Осталось лишь написать нам, и мы всё организуем: подберём преподавателя, согласуем удобное время, график и формат занятий.</p>
+      </div>
+      <div class="mt-10 flex justify-center">
+        <button onclick="document.getElementById('contact-modal').classList.remove('hidden')"
+                class="rounded-full bg-black px-8 py-4 text-base font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.12)]"
+                data-i18n="contacts_btn">Связаться с нами</button>
+      </div>
+      <div class="mt-8 flex justify-center gap-6">
+        <!-- Telegram -->
+        <a href="https://t.me/SoyNativo_Support" target="_blank"
+           class="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/10 transition hover:scale-105">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6 text-neutral-800">
+            <path d="M11.944 0A12 12 0 1 0 24 12 12 12 0 0 0 11.944 0zm6.122 8.148-2.04 9.61c-.152.677-.548.842-1.112.524l-3.073-2.264-1.484 1.428c-.163.163-.3.3-.616.3l.22-3.12 5.674-5.126c.246-.22-.054-.342-.383-.122L7.44 14.39l-3.023-.944c-.658-.206-.672-.658.137-.977l11.8-4.55c.546-.2 1.025.133.712 1.23z"/>
+          </svg>
+        </a>
+        <!-- Phone -->
+        <a href="tel:+34683365315"
+           class="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/10 transition hover:scale-105">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6 text-neutral-800">
+            <path d="M6.62 10.79a15.053 15.053 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.61 21 3 13.39 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/>
+          </svg>
+        </a>
+        <!-- Email -->
+        <a href="mailto:depcomunicacion@soynativo.eu"
+           class="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/10 transition hover:scale-105">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6 text-neutral-800">
+            <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4.236-8 5.334-8-5.334V6l8 5.334L20 6v2.236z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="border-t border-black/5 bg-[#d1d1d1]">
+  <div class="mx-auto flex max-w-7xl flex-col items-center gap-4 px-6 py-10 text-center lg:px-10">
+    <img src="https://i.ibb.co/yBWx6ry0/Logo.png" alt="SOY NATIVO" class="h-14 w-28 object-contain" />
+    <div class="text-sm text-neutral-500">© 2018 – 2026, SOY NATIVO</div>
+  </div>
+</footer>
+
+<!-- CONTACT MODAL -->
+<div id="contact-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-6 backdrop-blur-sm">
+  <div class="relative w-full max-w-lg rounded-[2rem] bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.22)] ring-1 ring-black/5">
+    <button onclick="closeContactModal()" class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-xl leading-none text-neutral-700 transition hover:scale-105 hover:bg-neutral-200">×</button>
+    <div class="pr-10">
+      <div class="text-2xl font-semibold tracking-tight" data-i18n="modal_title">Связаться с нами</div>
+      <div class="mt-2 text-sm leading-6 text-neutral-500" data-i18n="modal_subtitle">Оставьте контакты — мы подберём преподавателя, время и формат занятий.</div>
+    </div>
+    <div id="contact-success" class="hidden mt-6 rounded-2xl bg-neutral-100 px-5 py-6 text-center text-base font-semibold text-neutral-900" data-i18n="modal_success">
+      Спасибо! Мы скоро свяжемся с вами.
+    </div>
+    <form id="contact-form" action="https://formspree.io/f/xpqbaqyr" method="POST" class="mt-6 space-y-4">
+      <div>
+        <label class="text-sm font-medium text-neutral-700" data-i18n="form_name">Ваше полное имя</label>
+        <input required name="name" class="mt-2 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 outline-none transition focus:border-black/25 focus:bg-white" />
+      </div>
+      <div>
+        <label class="text-sm font-medium text-neutral-700" data-i18n="form_contact">Ваш контакт для связи</label>
+        <input required name="contact" data-i18n-placeholder="form_contact_placeholder" placeholder="Telegram, WhatsApp, телефон или email"
+               class="mt-2 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 outline-none transition focus:border-black/25 focus:bg-white" />
+      </div>
+      <div id="form-lang-field">
+        <label class="text-sm font-medium text-neutral-700" data-i18n="form_lang_label">Желаемый язык</label>
+        <select id="form-lang-select" required name="language" class="mt-2 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 outline-none transition focus:border-black/25 focus:bg-white">
+          <option value="" disabled selected data-i18n="form_lang_placeholder">Выберите язык</option>
+          <option value="Spanish"  data-i18n="lang_spanish">Испанский</option>
+          <option value="English"  data-i18n="lang_english">Английский</option>
+          <option value="Bulgarian" data-i18n="lang_bulgarian">Болгарский</option>
+          <option value="Ukrainian" data-i18n="lang_ukrainian">Украинский</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm font-medium text-neutral-700" data-i18n="form_comment">Комментарий</label>
+        <textarea name="message" data-i18n-placeholder="form_comment_placeholder"
+                  placeholder="Напишите удобное время или дополнительную информацию" rows="4"
+                  class="mt-2 w-full resize-none rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 outline-none transition focus:border-black/25 focus:bg-white"></textarea>
+      </div>
+      <div id="selected-teacher-field" class="hidden space-y-4">
+        <div>
+          <label class="text-sm font-medium text-neutral-700" data-i18n="form_teacher_label">Выбранный преподаватель</label>
+          <input id="selectedTeacher" name="selectedTeacher" type="text" readonly
+                 class="mt-2 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-neutral-700 outline-none cursor-default" />
+        </div>
+        <div>
+          <label class="text-sm font-medium text-neutral-700" data-i18n="form_teacher_lang_label">Язык обучения</label>
+          <input id="selectedTeacherLang" name="selectedTeacherLang" type="text" readonly
+                 class="mt-2 w-full rounded-2xl border border-black/10 bg-neutral-50 px-4 py-3 text-neutral-700 outline-none cursor-default" />
+        </div>
+      </div>
+      <div id="contact-error" class="hidden rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+      <button type="submit" id="contact-submit"
+              class="w-full rounded-full bg-black px-6 py-3.5 text-base font-semibold text-white transition hover:scale-[1.01] hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+              data-i18n="form_submit">Отправить</button>
+    </form>
+  </div>
+</div>
+
+<!-- VIDEO MODAL -->
+<div id="video-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-6 backdrop-blur-md">
+  <div class="relative w-[min(90vw,900px)] rounded-[2rem] bg-black shadow-[0_24px_80px_rgba(0,0,0,0.35)] ring-1 ring-white/10 pb-6">
+    <button onclick="closeVideoModal()" class="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/85 text-lg leading-none text-black shadow-sm backdrop-blur transition hover:scale-105 hover:bg-white">×</button>
+    <video id="modal-video" src="" autoplay playsinline class="w-full rounded-t-[2rem] max-h-[60vh] object-contain bg-black"></video>
+    <button id="modal-choose-btn" class="modal-choose-btn" data-i18n="choose_teacher_btn" onclick="modalChooseTeacher()">Хочу этого преподавателя!</button>
+  </div>
+</div>
+
+<script>
+const translations = {
+  ru: {
+    tagline:"Онлайн-школа языков",nav_home:"Главная",nav_pricing:"Стоимость услуг",nav_teachers:"Преподаватели",nav_contacts:"Контакты",nav_cabinet:"Кабинет ученика",
+    hero_badge:"Учите языки с носителями, общаясь на понятном вам языке",
+    hero_h1:"Говорите уже на первом уроке",handwrite:"вместе с нами",
+    hero_p:"Без лишней теории. Только практика с носителями и быстрый прогресс. Всё обучение под вашим контролем: гибкое расписание, записи уроков и полный доступ к ним в любой момент.",
+    hero_card_title:"Выберите язык. Остальное — за нами.",hero_card_label:"Выберите язык",
+    lang_spanish:"Испанский",lang_english:"Английский",lang_ukrainian:"Украинский",lang_bulgarian:"Болгарский",
+    lang_spanish_full:"Испанский язык",lang_english_full:"Английский язык",lang_ukrainian_full:"Украинский язык",lang_bulgarian_full:"Болгарский язык",
+    platform_label:"Преимущества платформы",platform_h2:"Обучение, которое подстраивается под вас",
+    platform_p:"Ваше расписание, которым вы можете управлять, записи уже проведённых уроков и домашние задания — в одном кабинете.",
+    pf1_title:"Управление уроками",pf1_text:"Добавляйте, переносите или отменяйте занятия самостоятельно, без ожидания ответа преподавателя.",
+    pf2_title:"Записи уроков",pf2_text:"Все занятия записываются и доступны только вам в личном кабинете в любое удобное время.",
+    pf3_title:"Домашние задания",pf3_text:"Задания, оценки и история каждого урока хранятся на платформе и всегда под рукой.",
+    pf4_title:"Поддержка 24/7",pf4_text:"Задавайте вопросы преподавателю и службе поддержки через чат на сайте в любое удобное для вас время.",
+    teachers_label:"Преподаватели",teachers_h2:"Люди, с которыми хочется заговорить",watch_video:"Смотреть видео",
+    teacher_lara:"Лара",teacher_erik:"Эрик",teacher_alejandro:"Алехандро",teacher_lidia:"Лидия",teacher_tatyana:"Татьяна",erik_bio:"Опыт работы со взрослыми и детьми более 5 лет, подготовка к экзаменам любого уровня (DELE y SIELE до C2), разговорная практика",
+    alejandro_bio:"Опыт работы со взрослыми и детьми более 10 лет, подготовка к экзаменам любого уровня (DELE y SIELE до C2), разговорная практика",
+    lara_bio:"Носитель языка (ЮАР), c украинскими и американскими корнями, филолог и психолог. Опыт с детьми и взрослыми, преподавание английского до уровня C2",
+    lidia_bio:"Профессиональная актриса театра и кино: разговорный украинский, постановка произношения и артикуляции, помощь в избавлении от суржика",
+    tatyana_bio:"Опыт более 25 лет: преподаватель болгарского и русского языка, экс-завуч (20+ лет), экзаменатор вступительных экзаменов в ВУЗы Болгарии. Подготовка к поступлению и разговорный болгарский язык",
+    contacts_label:"Как начать?",contacts_h2:"Вы уже начали!",
+    contacts_p:"Если вы здесь — значит, вы уже с нами. Осталось лишь написать нам, и мы всё организуем: подберём преподавателя, согласуем удобное время, график и формат занятий.",
+    contacts_btn:"Связаться с нами",modal_title:"Связаться с нами",modal_subtitle:"Оставьте контакты — мы подберём преподавателя, время и формат занятий.",
+    modal_success:"Спасибо! Мы скоро свяжемся с вами.",form_name:"Ваше полное имя",form_contact:"Ваш контакт для связи",
+    form_contact_placeholder:"Telegram, WhatsApp, телефон или email",form_lang_label:"Желаемый язык",form_lang_placeholder:"Выберите язык",
+    form_comment:"Комментарий",form_comment_placeholder:"Напишите удобное время или дополнительную информацию",
+    form_teacher_label:"Выбранный преподаватель",form_teacher_lang_label:"Язык обучения",choose_teacher_btn:"Хочу этого преподавателя!",form_submit:"Отправить",form_sending:"Отправляем...",form_error:"Не удалось отправить форму. Попробуйте ещё раз или напишите нам в Telegram.",
+  },
+  es: {
+    tagline:"Escuela de idiomas online",nav_home:"Inicio",nav_pricing:"Precios",nav_teachers:"Profesores",nav_contacts:"Contacto",nav_cabinet:"Área del alumno",
+    hero_badge:"Aprende idiomas con hablantes nativos en tu propio idioma",
+    hero_h1:"Habla desde la primera clase",handwrite:"con nosotros",
+    hero_p:"Sin teoría innecesaria. Solo práctica con nativos y progreso rápido. Todo el aprendizaje bajo tu control: horario flexible, grabaciones de clases y acceso completo en cualquier momento.",
+    hero_card_title:"Elige un idioma. El resto lo hacemos nosotros.",hero_card_label:"Elige un idioma",
+    lang_spanish:"Español",lang_english:"Inglés",lang_ukrainian:"Ucraniano",lang_bulgarian:"Búlgaro",
+    lang_spanish_full:"Español",lang_english_full:"Inglés",lang_ukrainian_full:"Ucraniano",lang_bulgarian_full:"Búlgaro",
+    platform_label:"Ventajas de la plataforma",platform_h2:"Un aprendizaje que se adapta a ti",
+    platform_p:"Con un horario que puedes gestionar por tu cuenta, así como las grabaciones de tus clases y las tareas, todo en una sola plataforma.",
+    pf1_title:"Gestión de clases",pf1_text:"Añade, pospone o cancela clases tú mismo, sin esperar la respuesta del profesor.",
+    pf2_title:"Grabaciones de clases",pf2_text:"Todas las clases se graban y están disponibles solo para ti en tu área personal, en cualquier momento.",
+    pf3_title:"Tareas",pf3_text:"Las tareas, notas e historial de cada clase se guardan dentro de la plataforma y siempre están disponibles.",
+    pf4_title:"Soporte 24/7",pf4_text:"Haz preguntas al profesor y al equipo de soporte a través de nuestra plataforma en cualquier momento.",
+    teachers_label:"Profesores",teachers_h2:"Personas con quienes querrás hablar",watch_video:"Ver vídeo",
+    teacher_lara:"Lara",teacher_erik:"Erick",teacher_alejandro:"Alejandro",teacher_lidia:"Lidia",teacher_tatyana:"Tetiana",erik_bio:"Preparación para exámenes de cualquier nivel (DELE y SIELE hasta C2). Más de 6 años de experiencia como docente",
+    alejandro_bio:"Preparación para exámenes de cualquier nivel (hasta C2). Más de 10 años de experiencia como docente",
+    lara_bio:"Hablante nativa (Sudáfrica), raíces ucranianas y estadounidenses, filóloga y psicóloga, experiencia con niños y adultos, inglés de cualquier nivel (hasta C2)",
+    lidia_bio:"Actriz profesional de teatro y cine, ucraniano conversacional, trabajo en pronunciación y articulación, ayuda para eliminar el surzhyk",
+    tatyana_bio:"Más de 25 años de experiencia. Profesora de búlgaro y ruso. Exsubdirectora durante más de 20 años. Examinadora de admisiones universitarias en Bulgaria y preparadora para el acceso a la universidad.",
+    contacts_label:"¿Cómo empezar?",contacts_h2:"¡Ya lo has hecho!",
+    contacts_p:"Si estás aquí, ya formas parte de nosotros. Solo tienes que escribirnos y nosotros organizaremos todo: elegimos al profesor, coordinamos el horario y el formato de las clases.",
+    contacts_btn:"Contáctanos",modal_title:"Contáctanos",modal_subtitle:"Déjanos tus datos y te ayudaremos a elegir profesor, horario y formato.",
+    modal_success:"¡Gracias! Nos pondremos en contacto contigo pronto.",form_name:"Tu nombre completo",form_contact:"Tu contacto",
+    form_contact_placeholder:"Telegram, WhatsApp, teléfono o email",form_lang_label:"Idioma deseado",form_lang_placeholder:"Selecciona un idioma",
+    form_comment:"Comentario",form_comment_placeholder:"Escribe tu horario preferido o información adicional",
+    form_teacher_label:"Profesor seleccionado",form_teacher_lang_label:"Idioma de aprendizaje",choose_teacher_btn:"¡Quiero a este profesor!",form_submit:"Enviar",form_sending:"Enviando...",form_error:"No se pudo enviar el formulario. Inténtalo de nuevo o escríbenos por Telegram.",
+  },
+  en: {
+    tagline:"Online language school",nav_home:"Home",nav_pricing:"Pricing",nav_teachers:"Teachers",nav_contacts:"Contact",nav_cabinet:"Student cabinet",
+    hero_badge:"Learn languages with native speakers — in a language you understand",
+    hero_h1:"Speak from your very first lesson",handwrite:"together with us",
+    hero_p:"No unnecessary theory. Just practice with native speakers and fast progress. All learning under your control: flexible schedule, lesson recordings and full access at any time.",
+    hero_card_title:"Choose a language. We'll handle the rest.",hero_card_label:"Choose a language",
+    lang_spanish:"Spanish",lang_english:"English",lang_ukrainian:"Ukrainian",lang_bulgarian:"Bulgarian",
+    lang_spanish_full:"Spanish",lang_english_full:"English",lang_ukrainian_full:"Ukrainian",lang_bulgarian_full:"Bulgarian",
+    platform_label:"Platform features",platform_h2:"Learning that adapts to you",
+    platform_p:"Your schedule, which you can manage yourself, recordings of completed lessons and homework — all in one cabinet.",
+    pf1_title:"Lesson management",pf1_text:"Add, reschedule, or cancel lessons yourself — no need to wait for your teacher's reply.",
+    pf2_title:"Lesson recordings",pf2_text:"All lessons are recorded and available only to you in your personal cabinet, any time you like.",
+    pf3_title:"Homework",pf3_text:"Assignments, grades, and lesson history for each lesson are stored inside the platform and always within reach.",
+    pf4_title:"24/7 support",pf4_text:"Ask your teacher or support team through the website chat or chatbot at any time.",
+    teachers_label:"Teachers",teachers_h2:"People you'll want to talk to",watch_video:"Watch video",
+    teacher_lara:"Lara",teacher_erik:"Erick",teacher_alejandro:"Alejandro",teacher_lidia:"Lidia",teacher_tatyana:"Tetiana",erik_bio:"Experience with adults and children, exam preparation at any level (DELE and SIELE up to C2), conversational practice, over 5 years of teaching experience",
+    alejandro_bio:"Professional philologist, exam preparation at any level (up to C2), conversational language, over 4 years of teaching experience",
+    lara_bio:"Native speaker (South Africa), Ukrainian and American roots, philologist and psychologist, experience with children and adults, English at any level (up to C2)",
+    lidia_bio:"Professional theatre and film actress, conversational Ukrainian, work on pronunciation and articulation, help with eliminating mixed speech",
+    tatyana_bio:"Over 25 years of experience, teacher of Bulgarian and Russian, former deputy principal (20+ years), university entrance examiner in Bulgaria, admission preparation and conversational Bulgarian",
+    contacts_label:"How to get started?",contacts_h2:"You already have!",
+    contacts_p:"If you're here, you're already with us. Just reach out and we'll handle everything: find the right teacher, agree on a convenient schedule and lesson format.",
+    contacts_btn:"Contact us",modal_title:"Contact us",modal_subtitle:"Leave your details and we'll find the right teacher, schedule and format for you.",
+    modal_success:"Thank you! We'll get in touch with you soon.",form_name:"Your full name",form_contact:"Your contact",
+    form_contact_placeholder:"Telegram, WhatsApp, phone or email",form_lang_label:"Desired language",form_lang_placeholder:"Select a language",
+    form_comment:"Comment",form_comment_placeholder:"Write your preferred time or any additional information",
+    form_teacher_label:"Selected teacher",form_teacher_lang_label:"Learning language",choose_teacher_btn:"I want this teacher!",form_submit:"Submit",form_sending:"Sending...",form_error:"Could not send the form. Please try again or write to us on Telegram.",
+  },
+  uk: {
+    tagline:"Онлайн-школа мов",nav_home:"Головна",nav_pricing:"Вартість послуг",nav_teachers:"Викладачі",nav_contacts:"Контакти",nav_cabinet:"Кабінет учня",
+    hero_badge:"Вивчайте мови з носіями — спілкуючись зрозумілою вам мовою",
+    hero_h1:"Говоріть вже на першому уроці",handwrite:"разом з нами",
+    hero_p:"Без зайвої теорії. Тільки практика з носіями та швидкий прогрес. Все навчання під вашим контролем: гнучкий розклад, записи уроків і повний доступ у будь-який момент.",
+    hero_card_title:"Оберіть мову. Решта — за нами.",hero_card_label:"Оберіть мову",
+    lang_spanish:"Іспанська",lang_english:"Англійська",lang_ukrainian:"Українська",lang_bulgarian:"Болгарська",
+    lang_spanish_full:"Іспанська мова",lang_english_full:"Англійська мова",lang_ukrainian_full:"Українська мова",lang_bulgarian_full:"Болгарська мова",
+    platform_label:"Переваги платформи",platform_h2:"Навчання, яке підлаштовується під вас",
+    platform_p:"Ваш розклад, яким ви можете керувати, записи вже проведених уроків і домашні завдання — в одному кабінеті.",
+    pf1_title:"Керування уроками",pf1_text:"Додавайте, переносьте або скасовуйте заняття самостійно, без очікування відповіді викладача.",
+    pf2_title:"Записи уроків",pf2_text:"Усі заняття записуються і доступні лише вам у особистому кабінеті в будь-який зручний час.",
+    pf3_title:"Домашні завдання",pf3_text:"Завдання, оцінки та історія по кожному уроку зберігаються всередині платформи і завжди під рукою.",
+    pf4_title:"Підтримка 24/7",pf4_text:"Ставте запитання викладачу та службі підтримки через чат на сайті або чат-бот у будь-який момент.",
+    teachers_label:"Викладачі",teachers_h2:"Люди, з якими хочеться заговорити",watch_video:"Дивитись відео",
+    teacher_lara:"Лара",teacher_erik:"Ерік",teacher_alejandro:"Алехандро",teacher_lidia:"Лідія",teacher_tatyana:"Тетяна",erik_bio:"Досвід роботи з дорослими та дітьми понад 5 років, підготовка до іспитів будь-якого рівня (DELE y SIELE до C2), розмовна практика",
+    alejandro_bio:"Професійний філолог, підготовка до іспитів будь-якого рівня (до C2), розмовна мова, досвід викладання понад 4 роки",
+    lara_bio:"Носій мови (ПАР), українське та американське коріння, філолог і психолог, досвід з дітьми та дорослими, англійська будь-якого рівня (до C2)",
+    lidia_bio:"Професійна акторка театру і кіно, розмовна українська, робота над вимовою та артикуляцією, допомога у позбавленні від суржику",
+    tatyana_bio:"Досвід понад 25 років, викладач болгарської та російської, колишній завуч (20+ років), екзаменатор вступних у ВУЗи Болгарії, підготовка до вступу та розмовна болгарська",
+    contacts_label:"Як почати?",contacts_h2:"Ви вже почали!",
+    contacts_p:"Якщо ви тут — значить ви вже з нами. Залишилось лише написати нам, і ми все організуємо: підберемо викладача, узгодимо зручний час, графік і формат занять.",
+    contacts_btn:"Зв'язатися з нами",modal_title:"Зв'язатися з нами",modal_subtitle:"Залиште контакти — ми підберемо викладача, час і формат занять.",
+    modal_success:"Дякуємо! Ми незабаром зв'яжемося з вами.",form_name:"Ваше повне ім'я",form_contact:"Ваш контакт для зв'язку",
+    form_contact_placeholder:"Telegram, WhatsApp, телефон або email",form_lang_label:"Бажана мова",form_lang_placeholder:"Оберіть мову",
+    form_comment:"Коментар",form_comment_placeholder:"Напишіть зручний час або додаткову інформацію",
+    form_teacher_label:"Обраний викладач",form_teacher_lang_label:"Мова навчання",choose_teacher_btn:"Хочу цього викладача!",form_submit:"Надіслати",form_sending:"Надсилаємо...",form_error:"Не вдалося надіслати форму. Спробуйте ще раз або напишіть нам у Telegram.",
+  },
+};
+
+let currentLang = 'ru';
+
+function setLang(lang) {
+  currentLang = lang;
+  const t = translations[lang];
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (t[key] !== undefined) el.placeholder = t[key];
+  });
+
+  // dropdown label already updated by selectLang
+
+  document.documentElement.lang = lang;
+
+  // re-trigger handwrite animation with new text
+  const hwText = document.getElementById('handwrite-text');
+  if (hwText) {
+    const phrase = t.handwrite || '';
+    // rebuild spans
+    let html = '';
+    for (let i = 0, idx = 0; i < phrase.length; i++) {
+      if (phrase[i] === ' ') {
+        html += '<span class="hw-space">&nbsp;</span>';
+      } else {
+        html += `<span style="--i:${idx}">${phrase[i]}</span>`;
+        idx++;
+      }
+    }
+    hwText.innerHTML = html;
+    hwText.setAttribute('aria-label', phrase);
+  }
+}
+
+const teacherVideos = {
+  "Эрик":      "https://res.cloudinary.com/dafac1mev/video/upload/v1777474346/%D0%AD%D1%80%D0%B8%D0%BA_f6besy.mov",
+  "Алехандро": "https://res.cloudinary.com/dafac1mev/video/upload/v1777474327/%D0%90%D0%BB%D0%B5%D1%85%D0%B0%D0%BD%D0%B4%D1%80%D0%BE_roq2ql.mp4",
+  "Лара":      "https://res.cloudinary.com/dafac1mev/video/upload/v1777474332/%D0%9B%D0%B0%D1%80%D0%B0_vsitf0.mp4",
+  "Лидия":     "https://res.cloudinary.com/dafac1mev/video/upload/v1777475773/2026-04-29_17.14.39_ytmejw.mp4",
+};
+
+function scrollToLanguage(lang) {
+  const el = document.getElementById('teachers-' + lang);
+  if (!el) return;
+  const headerHeight = document.querySelector('header')?.offsetHeight || 80;
+  const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+
+function openVideo(name) {
+  const src = teacherVideos[name];
+  if (!src) return;
+  const vid = document.getElementById("modal-video");
+  vid.src = src; vid.load(); vid.play();
+  // store teacher name for the choose button
+  document.getElementById("modal-choose-btn").dataset.teacher = name;
+  document.getElementById("video-modal").classList.remove("hidden");
+}
+
+function modalChooseTeacher() {
+  const name = document.getElementById("modal-choose-btn").dataset.teacher || "";
+  // find teacher language
+  const langMap = {
+    "Эрик": "Испанский язык",
+    "Алехандро": "Испанский язык",
+    "Лара": "Английский язык",
+    "Лидия": "Украинский язык",
+    "Татьяна": "Болгарский язык",
+  };
+  closeVideoModal();
+  setTimeout(() => chooseTeacher(name, langMap[name] || ""), 150);
+}
+
+function closeVideoModal() {
+  const vid = document.getElementById("modal-video");
+  vid.pause(); vid.src = "";
+  document.getElementById("video-modal").classList.add("hidden");
+}
+
+function closeContactModal() {
+  document.getElementById("contact-modal").classList.add("hidden");
+  document.getElementById("contact-form").reset();
+  document.getElementById("contact-form").classList.remove("hidden");
+  document.getElementById("contact-success").classList.add("hidden");
+  document.getElementById("contact-error").classList.add("hidden");
+  document.getElementById("selected-teacher-field").classList.add("hidden");
+  document.getElementById("selectedTeacher").value = "";
+  document.getElementById("selectedTeacherLang").value = "";
+  // restore language field for normal form usage
+  const langField = document.getElementById("form-lang-field");
+  const langSelect = document.getElementById("form-lang-select");
+  langField.classList.remove("hidden");
+  langSelect.setAttribute("required", "required");
+  const btn = document.getElementById("contact-submit");
+  btn.disabled = false;
+  btn.textContent = translations[currentLang].form_submit;
+}
+
+function chooseTeacher(name, lang) {
+  // scroll to contacts section
+  const section = document.getElementById("contacts");
+  if (section) {
+    const headerH = document.querySelector("header")?.offsetHeight || 80;
+    const top = section.getBoundingClientRect().top + window.scrollY - headerH - 16;
+    window.scrollTo({ top, behavior: "smooth" });
+  }
+  // open modal after scroll settles
+  setTimeout(() => {
+    document.getElementById("contact-modal").classList.remove("hidden");
+    document.getElementById("selected-teacher-field").classList.remove("hidden");
+    // Translate teacher name and language based on current UI language
+    const t = translations[currentLang] || translations['ru'];
+    const nameKeyMap = {
+      'Эрик': 'teacher_erik', 'Алехандро': 'teacher_alejandro',
+      'Лара': 'teacher_lara', 'Лидия': 'teacher_lidia', 'Татьяна': 'teacher_tatyana'
+    };
+    const langKeyMap = {
+      'Испанский язык': 'lang_spanish_full', 'Английский язык': 'lang_english_full',
+      'Украинский язык': 'lang_ukrainian_full', 'Болгарский язык': 'lang_bulgarian_full'
+    };
+    const translatedName = t[nameKeyMap[name]] || name;
+    const translatedLang = t[langKeyMap[lang]] || lang || '';
+    document.getElementById("selectedTeacher").value = translatedName;
+    document.getElementById("selectedTeacherLang").value = translatedLang;
+    // hide the language dropdown since it's already known
+    const langField = document.getElementById("form-lang-field");
+    const langSelect = document.getElementById("form-lang-select");
+    langField.classList.add("hidden");
+    langSelect.removeAttribute("required");
+    langSelect.value = "";
+  }, 600);
+}
+
+document.getElementById("contact-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.currentTarget;
+  const btn = document.getElementById("contact-submit");
+  const errEl = document.getElementById("contact-error");
+  const t = translations[currentLang];
+  btn.disabled = true;
+  btn.textContent = t.form_sending;
+  errEl.classList.add("hidden");
+  try {
+    const res = await fetch("https://formspree.io/f/xpqbaqyr", {
+      method: "POST", body: new FormData(form), headers: { Accept: "application/json" },
+    });
+    if (!res.ok) throw new Error();
+    form.classList.add("hidden");
+    const s = document.getElementById("contact-success");
+    s.textContent = t.modal_success;
+    s.classList.remove("hidden");
+    setTimeout(closeContactModal, 2000);
+  } catch {
+    errEl.textContent = t.form_error;
+    errEl.classList.remove("hidden");
+    btn.disabled = false;
+    btn.textContent = t.form_submit;
+  }
+});
+
+function toggleLangDropdown() {
+  const menu = document.getElementById('lang-dropdown-menu');
+  const arrow = document.getElementById('lang-dropdown-arrow');
+  const isOpen = !menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', isOpen);
+  arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+function selectLang(lang, label) {
+  document.getElementById('lang-dropdown-label').textContent = label;
+  document.getElementById('lang-dropdown-menu').classList.add('hidden');
+  document.getElementById('lang-dropdown-arrow').style.transform = '';
+  // update checkmarks
+  document.querySelectorAll('.lang-option').forEach(btn => {
+    const check = btn.querySelector('.lang-check');
+    if (btn.getAttribute('data-lang') === lang) {
+      check.classList.remove('hidden');
+      btn.classList.add('font-semibold');
+    } else {
+      check.classList.add('hidden');
+      btn.classList.remove('font-semibold');
+    }
+  });
+  setLang(lang);
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('lang-dropdown-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('lang-dropdown-menu').classList.add('hidden');
+    document.getElementById('lang-dropdown-arrow').style.transform = '';
+  }
+});
+</script>
+</body>
+</html>
