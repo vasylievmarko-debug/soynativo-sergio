@@ -427,8 +427,9 @@
 </footer>
 
 <!-- CONTACT MODAL -->
-<div id="contact-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-6 backdrop-blur-sm">
-  <div class="relative w-full max-w-lg rounded-[2rem] bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.22)] ring-1 ring-black/5">
+<div id="contact-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/35 backdrop-blur-sm">
+  <div class="flex min-h-full items-center justify-center p-6 sm:p-10">
+    <div class="relative w-full max-w-lg rounded-[2rem] bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.22)] ring-1 ring-black/5">
     <button onclick="closeContactModal()" class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-xl leading-none text-neutral-700 transition hover:scale-105 hover:bg-neutral-200">×</button>
     <div class="pr-10">
       <div class="text-2xl font-semibold tracking-tight" data-i18n="modal_title">Связаться с нами</div>
@@ -480,6 +481,7 @@
               class="w-full rounded-full bg-black px-6 py-3.5 text-base font-semibold text-white transition hover:scale-[1.01] hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
               data-i18n="form_submit">Отправить</button>
     </form>
+    </div>
   </div>
 </div>
 
