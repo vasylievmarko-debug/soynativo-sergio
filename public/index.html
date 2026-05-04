@@ -4,42 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SOY NATIVO — Онлайн-школа языков</title>
-  <script src="https://cdn.tailwindcss.com">
-function toggleLangDropdown() {
-  const menu = document.getElementById('lang-dropdown-menu');
-  const arrow = document.getElementById('lang-dropdown-arrow');
-  const isOpen = !menu.classList.contains('hidden');
-  menu.classList.toggle('hidden', isOpen);
-  arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
-}
-
-function selectLang(lang, label) {
-  document.getElementById('lang-dropdown-label').textContent = label;
-  document.getElementById('lang-dropdown-menu').classList.add('hidden');
-  document.getElementById('lang-dropdown-arrow').style.transform = '';
-  // update checkmarks
-  document.querySelectorAll('.lang-option').forEach(btn => {
-    const check = btn.querySelector('.lang-check');
-    if (btn.getAttribute('data-lang') === lang) {
-      check.classList.remove('hidden');
-      btn.classList.add('font-semibold');
-    } else {
-      check.classList.add('hidden');
-      btn.classList.remove('font-semibold');
-    }
-  });
-  setLang(lang);
-}
-
-// Close dropdown on outside click
-document.addEventListener('click', function(e) {
-  const wrap = document.getElementById('lang-dropdown-wrap');
-  if (wrap && !wrap.contains(e.target)) {
-    document.getElementById('lang-dropdown-menu').classList.add('hidden');
-    document.getElementById('lang-dropdown-arrow').style.transform = '';
-  }
-});
-</script>
+  <link rel="stylesheet" href="./styles.css" />
   <style>
     @keyframes fadeInOnScroll {
       from { opacity: 0; transform: translateY(28px); filter: blur(8px); }
