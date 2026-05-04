@@ -674,7 +674,7 @@ const teacherVideos = {
 
 function scrollToLanguage(lang) {
   filterTeachers(lang);
-  const el = document.getElementById('teachers-' + lang);
+  const el = document.getElementById('teachers');
   if (!el) return;
   const headerHeight = document.querySelector('header')?.offsetHeight || 80;
   const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
