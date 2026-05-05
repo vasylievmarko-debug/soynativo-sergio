@@ -152,11 +152,12 @@ function setLang(lang) {
   }
 }
 
+// Vimeo player IDs — stored bare; openVideo builds the embed URL with autoplay flags.
 const teacherVideos = {
-  "Эрик":      "./assets/videos/teacher-erik.mov",
-  "Алехандро": "./assets/videos/teacher-alejandro.mp4",
-  "Лара":      "./assets/videos/teacher-lara.mp4",
-  "Лидия":     "./assets/videos/teacher-lidia.mp4",
+  "Эрик":      "1189227699",
+  "Алехандро": "1189227736",
+  "Лара":      "1189227711",
+  "Лидия":     "1189227549",
 };
 
 function scrollToLanguage(lang) {
@@ -205,8 +206,9 @@ function openVideo(name) {
     document.getElementById("modal-teacher-lang").textContent = t[info.langKey] || '';
     document.getElementById("modal-teacher-bio").textContent = t[info.bioKey] || '';
   }
-  const vid = document.getElementById("modal-video");
-  vid.src = src; vid.load(); vid.play();
+  const iframe = document.getElementById("modal-video");
+  // muted=1 + autoplay=1 needed together for mobile autoplay; dnt=1 skips Vimeo analytics; playsinline keeps it inline on iOS
+  iframe.src = `https://player.vimeo.com/video/${src}?autoplay=1&muted=1&playsinline=1&dnt=1`;
   // store teacher name for the choose button
   document.getElementById("modal-choose-btn").dataset.teacher = name;
   document.getElementById("video-modal").classList.remove("hidden");
@@ -226,8 +228,8 @@ function modalChooseTeacher() {
 }
 
 function closeVideoModal() {
-  const vid = document.getElementById("modal-video");
-  vid.pause(); vid.src = "";
+  const iframe = document.getElementById("modal-video");
+  iframe.src = ""; // clearing src destroys the Vimeo player and stops playback
   document.getElementById("video-modal").classList.add("hidden");
 }
 
