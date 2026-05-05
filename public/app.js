@@ -207,8 +207,15 @@ function openVideo(name) {
     document.getElementById("modal-teacher-bio").textContent = t[info.bioKey] || '';
   }
   const iframe = document.getElementById("modal-video");
-  // muted=1 + autoplay=1 needed together for mobile autoplay; dnt=1 skips Vimeo analytics; playsinline keeps it inline on iOS
+  // muted=1 ensures autoplay fires on every browser; we then unmute and set volume to 50% via Player SDK once ready.
   iframe.src = `https://player.vimeo.com/video/${src}?autoplay=1&muted=1&playsinline=1&dnt=1`;
+  if (window.Vimeo && Vimeo.Player) {
+    const player = new Vimeo.Player(iframe);
+    player.ready().then(() => {
+      player.setVolume(0.5);
+      player.setMuted(false).catch(() => { /* mobile may block — user can unmute via player UI */ });
+    });
+  }
   // store teacher name for the choose button
   document.getElementById("modal-choose-btn").dataset.teacher = name;
   document.getElementById("video-modal").classList.remove("hidden");
