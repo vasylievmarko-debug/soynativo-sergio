@@ -154,9 +154,9 @@ function setLang(lang) {
 
 // Vimeo player IDs — stored bare; openVideo builds the embed URL with autoplay flags.
 const teacherVideos = {
-  "Эрик":      "1189227699",
-  "Алехандро": "1189227736",
-  "Лара":      "1189227711",
+  "Эрик":      "1189227711",
+  "Алехандро": "1189227699",
+  "Лара":      "1189227736",
   "Лидия":     "1189227549",
 };
 
