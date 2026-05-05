@@ -207,9 +207,15 @@ function openVideo(name) {
     document.getElementById("modal-teacher-bio").textContent = t[info.bioKey] || '';
   }
   const iframe = document.getElementById("modal-video");
-  // No muted=1 — plays with sound at default 100%. On mobile (iOS especially) autoplay-with-sound
-  // may be blocked: the Vimeo player will then show its play button and start on the user's tap.
-  iframe.src = `https://player.vimeo.com/video/${src}?autoplay=1&playsinline=1&dnt=1`;
+  // muted=1 ensures autoplay fires on every browser; SDK then unmutes once player is ready.
+  // No setVolume call — Vimeo defaults to 100%.
+  iframe.src = `https://player.vimeo.com/video/${src}?autoplay=1&muted=1&playsinline=1&dnt=1`;
+  if (window.Vimeo && Vimeo.Player) {
+    const player = new Vimeo.Player(iframe);
+    player.ready().then(() => {
+      player.setMuted(false).catch(() => { /* mobile may block — user can unmute via player UI */ });
+    });
+  }
   // store teacher name for the choose button
   document.getElementById("modal-choose-btn").dataset.teacher = name;
   document.getElementById("video-modal").classList.remove("hidden");
